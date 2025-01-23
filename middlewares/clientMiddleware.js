@@ -1,5 +1,5 @@
 // Middleware to check if the user is a client
-const isClient = (req, res, next) => {
+exports.isClient = (req, res, next) => {
   if (req.user.status !== "client") {
     return res
       .status(403)
@@ -7,5 +7,3 @@ const isClient = (req, res, next) => {
   }
   next();
 };
-
-module.exports = isClient;

@@ -1,5 +1,5 @@
 // Middleware to check if the user is an admin
-const isAdmin = (req, res, next) => {
+exports.isAdmin = (req, res, next) => {
   if (req.user.status !== "admin") {
     return res
       .status(403)
@@ -7,5 +7,3 @@ const isAdmin = (req, res, next) => {
   }
   next();
 };
-
-module.exports = isAdmin;

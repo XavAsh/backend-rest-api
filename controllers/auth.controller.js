@@ -78,7 +78,7 @@ exports.login = async (req, res) => {
         status: user.status,
       },
       JWT_SECRET,
-      { expiresIn: "1h" } // Token expiry time
+      { expiresIn: "30d" } // Token expiry time
     );
 
     res.json({
@@ -95,30 +95,4 @@ exports.login = async (req, res) => {
       .status(500)
       .json({ message: "Server error during login", error: error.message });
   }
-};
-
-// Middleware for authentication
-exports.authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (token == null) {
-    return res.sendStatus(401);
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
-// Middleware to check admin status
-exports.isAdmin = (req, res, next) => {
-  if (req.user.status !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Access denied. Admin rights required." });
-  }
-  next();
 };
