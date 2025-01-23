@@ -1,6 +1,9 @@
-const products = await Product.findAndCountAll({
-  where: { stock: { [Op.gt]: 0 }, tags: { [Op.contains]: tags } },
-  limit,
-  offset,
-});
-res.json(products);
+const express = require("express");
+const router = express.Router();
+const productController = require("../controllers/product.controller");
+
+// Routes for products
+router.get("/", productController.getProducts); // List all products
+router.get("/:id", productController.getProductById); // Get product by ID
+
+module.exports = router;
