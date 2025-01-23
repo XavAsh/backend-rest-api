@@ -1,59 +1,59 @@
-// Simulated orders storage (replace with database logic in a real app)
-const orders = [];
+const Order = require("../models/order.model");
 
-// Get all orders for a user
-const getOrders = (req, res) => {
-  const userId = req.userId || 1; // Replace with authenticated user logic
-  const userOrders = orders.filter((order) => order.userId === userId);
-  res.json({ orders: userOrders });
-};
-
-// Get a specific order by ID
-const getOrderById = (req, res) => {
-  const { orderId } = req.params;
-  const order = orders.find((order) => order.id === parseInt(orderId));
-
-  if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+exports.getOrders = async (req, res) => {
+  try {
+    const orders = await Order.findAll();
+    return res.json(orders);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve orders" });
   }
-
-  res.json({ order });
 };
 
-// Create a new order
-const createOrder = (req, res) => {
-  const { items, total, shippingAddress } = req.body;
-
-  if (!items || items.length === 0) {
-    return res.status(400).json({ message: "No items in the order" });
+exports.getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    return res.json(order);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to retrieve order" });
   }
-
-  const newOrder = {
-    id: Date.now(),
-    userId: req.userId || 1, // Replace with authenticated user logic
-    items,
-    total,
-    shippingAddress,
-    createdAt: new Date(),
-  };
-
-  orders.push(newOrder);
-  res.status(201).json({ message: "Order created", order: newOrder });
 };
 
-// Cancel an order
-const cancelOrder = (req, res) => {
-  const { orderId } = req.params;
-  const orderIndex = orders.findIndex(
-    (order) => order.id === parseInt(orderId)
-  );
-
-  if (orderIndex === -1) {
-    return res.status(404).json({ message: "Order not found" });
+exports.cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    await order.destroy();
+    return res.json({ message: "Order cancelled successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to cancel order" });
   }
-
-  orders.splice(orderIndex, 1);
-  res.json({ message: "Order canceled" });
 };
 
-module.exports = { getOrders, getOrderById, createOrder, cancelOrder };
+// Existing createOrder method remains the same
+exports.createOrder = async (req, res) => {
+  try {
+    const { userId, productId, quantity, totalPrice } = req.body;
+
+    // Validate input
+    if (!userId || !productId || !quantity || !totalPrice) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    // Create order
+    const newOrder = await Order.create({
+      userId,
+      productId,
+      quantity,
+      totalPrice,
+    });
+    return res.status(201).json(newOrder);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to create order." });
+  }
+};
